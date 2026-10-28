@@ -118,10 +118,16 @@ export default function Chat() {
   const [syncTkbError, setSyncTkbError] = useState(null);
   const [syncTkbSuccess, setSyncTkbSuccess] = useState(false);
 
-  // Cập nhật lời chào khi user đăng nhập hoặc đăng xuất (nếu chưa có tin nhắn chat)
+  const prevUsernameRef = useRef(user?.username);
+
+  // Cập nhật lời chào và làm mới phiên chat khi user đăng nhập, đăng xuất hoặc đổi tài khoản
   useEffect(() => {
-    if (!currentSessionId && messages.length === 1 && messages[0].id === 'welcome') {
-      setMessages([getWelcomeMessage(user, lastUser)]);
+    if (prevUsernameRef.current !== user?.username) {
+      prevUsernameRef.current = user?.username;
+      setCurrentSessionId(null);
+      setMessages([getWelcomeMessage(user, user ? null : lastUser)]);
+    } else if (!currentSessionId && messages.length === 1 && messages[0].id === 'welcome') {
+      setMessages([getWelcomeMessage(user, user ? null : lastUser)]);
     }
   }, [user, lastUser]);
 
@@ -502,6 +508,7 @@ export default function Chat() {
           level,
           stream: true,
           username: user ? user.username : (lastUser ? lastUser.username : null),
+          name: user ? user.name : (lastUser ? lastUser.name : null),
           isLoggedIn: Boolean(user)
         })
       });
